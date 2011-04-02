@@ -1,12 +1,19 @@
 #!/usr/bin/env python
 
+import os
 import socket
 
 class LedMatrix:
 
     size = (16,15)
 
-    def __init__(self, server="localhost", port=1338):
+    def __init__(self, server=None, port=1338):
+        if server == None:
+            if 'LEDWALL_IP' in os.environ:
+                server = os.environ['LEDWALL_IP']
+            else:
+                server = "localhost"
+
         self.sock = sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((server, port))
 
