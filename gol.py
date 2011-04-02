@@ -13,7 +13,7 @@ class GameOfLife:
 
     def new_field(self):
         size = self.size
-        self.field = [[False]*size[0] for i in range(size[0])]
+        self.field = [[False]*size[1] for i in range(size[0])]
 
     def load(self, file_name):
         data = open(file_name).readlines()
@@ -27,7 +27,7 @@ class GameOfLife:
     def create(self, x, y):
         print "create: %02i %02i" % (x,y)
         self.field[x][y] = True
-        self.matrix.send_pixel((x, y), (0x00, 0x00, 0xff))
+        self.matrix.send_pixel((x, y), (0x00, 0x00, 0x99))
 
     def die(self, x, y):
         print "die: %02i %02i" % (x,y)
@@ -66,13 +66,13 @@ class GameOfLife:
                     self.create(x, y)
 
 matrix = LedMatrix()
+matrix.send_clear()
+
 game = GameOfLife(matrix)
 game.load(sys.argv[1])
 
-matrix.send_clear()
-
 while True:
     game.step()
-    time.sleep(0.1)
+    time.sleep(0.2)
     print "step"
 
