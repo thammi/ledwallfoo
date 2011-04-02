@@ -18,11 +18,13 @@ class GameOfLife:
     def load(self, file_name):
         data = open(file_name).readlines()
 
+        width, height = self.size
+
         for y, line in enumerate(data):
             print line
             for x, char in enumerate(line):
                 if char == '#':
-                    self.create(x, y)
+                    self.create(x % width, y % height)
 
     def create(self, x, y):
         print "create: %02i %02i" % (x,y)
