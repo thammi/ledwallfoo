@@ -33,9 +33,10 @@ class Pacman:
 
                 a = x - middlepos
                 b = y - height / 2.0
-                rad = size / 2.0
 
                 sq_dist = a**2 + b**2
+
+                field_pos = x+y*width
 
                 if sq_dist < threshold:
                     dist = math.sqrt(sq_dist)
@@ -49,22 +50,26 @@ class Pacman:
                     if not 0.8 < deg < 1.2 or not (0.55 < dist / size * 2 < 0.75 and b < 0 and a > 0):
                         # not painting the mouth
                         if deg > mouth or a < 0:
-                            # marking pixel as dirty
-                            field[x+y*width] = True
-
-                            # edge fading
-                            max_intensity = 0xaa
-                            intensity = math.sqrt((rad - dist) / rad) * 2 * max_intensity
-                            intensity = min(intensity, max_intensity)
-
                             # not clearing later
                             painted = True
 
-                            matrix.send_pixel((x,y), (intensity, intensity, 0x00))
+                            # edge fading
+                            max_intensity = 0xaa
+                            rad = size / 2.0
+                            intensity = math.sqrt((rad - dist) / rad) * 2 * max_intensity
+                            intensity = min(intensity, max_intensity)
 
-                if not painted and field[x+y*width]:
+                            # not sending if pixel already at that state
+                            if field[field_pos] != intensity:
+                                # marking pixel as dirty
+                                field[field_pos] = intensity
+
+                                # finally painting
+                                matrix.send_pixel((x,y), (intensity, intensity, 0x00))
+
+                if not painted and field[field_pos]:
                     # clear formerly painted and no longer used pixels
-                    field[x+y*width] = False
+                    field[field_pos] = False
                     matrix.send_pixel((x,y), (0x00, 0x00, 0x00))
 
         # move forward
