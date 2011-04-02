@@ -34,3 +34,6 @@ class LedMatrix:
 
             self.send_pixel((x, y), pixel)
 
+    def send_clear(self):
+        self.sock.send("02" + "00" * (2 + 3) + "\r\n")
+
