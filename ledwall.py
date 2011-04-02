@@ -17,16 +17,20 @@ class LedMatrix:
         self.sock = sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((server, port))
 
+    def send_pixel(self, (x, y), (r, g, b)):
+        # quickfix! the ledwall is positioned in the wrong direction
+        width, height = self.size
+        (x, y) = (width - x, height - y)
+        msg_format = "02" + "%02x" * 2 + "%02x" * 3 + "\r\n"
+        self.sock.send(msg_format % (x+1, y+1, r, g, b))
+
     def send_image(self, image):
         size = self.size
-        sock = self.sock
-
-        msg_format = "02" + "%02x" * 2 + "%02x" * 3 + "\r\n"
 
         for index, pixel in enumerate(image.getdata()):
             # 1-based index?
             x = index % size[0] + 1
             y = index / size[0] + 1
 
-            sock.send(msg_format % ((x, y) + pixel))
+            self.send_pixel((x, y), pixel)
 
