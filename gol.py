@@ -69,6 +69,8 @@ matrix = LedMatrix()
 game = GameOfLife(matrix)
 game.load(sys.argv[1])
 
+matrix.send_clear()
+
 while True:
     game.step()
     time.sleep(0.1)
