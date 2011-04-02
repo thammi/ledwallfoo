@@ -3,10 +3,10 @@
 ## About
 
 This repository contains a small python library to interact with the
-[https://github.com/sebseb7/pentawall](pentawall). It additionally contains
+[pentawall](https://github.com/sebseb7/pentawall). It additionally contains
 several small applications using this library.
 
-You can use the [https://github.com/carwe/pentawallsim](Simulator) if you don't
+You can use the [Simulator](https://github.com/carwe/pentawallsim) if you don't
 have a pentawall handy.
 
 ## ledwall.py
@@ -14,7 +14,7 @@ have a pentawall handy.
 This is the library. It contains the following features:
 
 * send\_pixel(): Set a single pixel to the specified RGB value
-* send\_image(): Sends a Python Imaging Library image to the wall. Warning:
+* send\_image(): Sends a Python Imaging Library image to the wall. *Warning:*
   This method currently sends single pixels
 * send\_clear(): Resets the whole screen to black
 
@@ -32,7 +32,7 @@ Conways Game of Life wrapped to fit the screen. Start it with:
 
     ./gol.py $SEED
 
-$SEED is the initial configuration file. Some seeds are in `gol\_seeds/`.
+$SEED is the initial configuration file. Some seeds are in `gol_seeds/`.
 
 ### Pacman
 
