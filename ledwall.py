@@ -1,5 +1,6 @@
 import os
 import socket
+from StringIO import StringIO
 
 class LedMatrix:
 
@@ -27,14 +28,20 @@ class LedMatrix:
         self.sock.send(msg_format % (x+1, y+1, r, g, b))
 
     def send_image(self, image):
-        size = self.size
+        width, height = self.size
 
-        for index, pixel in enumerate(image.getdata()):
-            # 1-based index?
-            x = index % size[0]
-            y = index / size[0]
+        buf = StringIO()
+        data = image.getdata()
 
-            self.send_pixel((x, y), pixel)
+        # quickfix! reversed to fix wrong orientation of the wall
+        for x in reversed(range(width)):
+            for y in reversed(range(height)):
+                pixel = data[x+y*width]
+
+                for color in pixel:
+                    buf.write(chr(color))
+
+        self.send_raw_image(buf.getvalue())
 
     def send_clear(self):
         self.sock.send("02" + "00" * (2 + 3) + "\r\n")
