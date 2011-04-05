@@ -15,6 +15,10 @@ class LedMatrix:
         self.sock = sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((server, port))
 
+    def send_raw_image(self, raw):
+        # warning: orientation will not be fixed by this function!
+        self.sock.send("03" + raw.encode("hex") + "\r\n")
+
     def send_pixel(self, (x, y), (r, g, b)):
         # quickfix! the ledwall is positioned in the wrong direction
         width, height = self.size
