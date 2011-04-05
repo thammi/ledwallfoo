@@ -14,8 +14,9 @@ have a pentawall handy.
 This is the library. It contains the following features:
 
 * send\_pixel(): Set a single pixel to the specified RGB value
-* send\_image(): Sends a Python Imaging Library image to the wall. *Warning:*
-  This method currently sends single pixels
+* send\_image(): Sends a Python Imaging Library image to the wall
+* send\_raw\_image(): Send a raw image consisting of $WIDTH\*$HEIGHT RGB
+  pixels. *Warning:* This function won't fix the orientation for you!
 * send\_clear(): Resets the whole screen to black
 
 The address of the server can be passed to the Object in its constructor, is
