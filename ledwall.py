@@ -18,7 +18,7 @@ class LedMatrix:
 
     def send_raw_image(self, raw):
         # warning: orientation will not be fixed by this function!
-        self.sock.send("03" + raw.encode("hex") + "\r\n")
+        self.sock.send("03" + str(raw).encode("hex") + "\r\n")
 
     def send_pixel(self, (x, y), (r, g, b)):
         # quickfix! the ledwall is positioned in the wrong direction
