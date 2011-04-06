@@ -16,6 +16,9 @@ class LedMatrix:
         self.sock = sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((server, port))
 
+    def send_command(self, command, data=""):
+        self.sock.send("%02x" % command + data + "\r\n")
+
     def send_raw_image(self, raw):
         # quickfix to adjust to current orientation and a bug
         width, height = self.size
@@ -25,15 +28,15 @@ class LedMatrix:
                 offset = (x + y * width) * 3
                 out.write(raw[offset:offset+3])
 
-        self.sock.send("03" + str(out.getvalue()).encode("hex") + "\r\n")
+        self.send_command(3, str(out.getvalue()).encode("hex"))
 
     def send_pixel(self, (x, y), (r, g, b)):
         # quickfix! the ledwall is positioned in the wrong direction
         width, height = self.size
         (x, y) = (width - x - 1, height - y - 1)
-        msg_format = "02" + "%02x" * (2 + 3) + "\r\n"
+        msg_format = "%02x" * (2 + 3)
 
-        self.sock.send(msg_format % (x+1, y+1, r, g, b))
+        self.send_command(2, msg_format % (x+1, y+1, r, g, b))
 
     def send_image(self, image):
         buf = StringIO()
@@ -46,5 +49,5 @@ class LedMatrix:
         self.send_raw_image(buf.getvalue())
 
     def send_clear(self):
-        self.sock.send("02" + "00" * (2 + 3) + "\r\n")
+        self.send_command(2, "00" * (2 + 3))
 
