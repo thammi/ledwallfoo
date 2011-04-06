@@ -17,16 +17,14 @@ class LedMatrix:
         sock.connect((server, port))
 
     def send_raw_image(self, raw):
+        # quickfix to adjust to current orientation and a bug
         width, height = self.size
-
         out = StringIO()
-
         for x in reversed(range(width)):
             for y in reversed(range(height)):
                 offset = (x + y * width) * 3
                 out.write(raw[offset:offset+3])
 
-        # warning: orientation will not be fixed by this function!
         self.sock.send("03" + str(out.getvalue()).encode("hex") + "\r\n")
 
     def send_pixel(self, (x, y), (r, g, b)):
@@ -34,6 +32,7 @@ class LedMatrix:
         width, height = self.size
         (x, y) = (width - x - 1, height - y - 1)
         msg_format = "02" + "%02x" * (2 + 3) + "\r\n"
+
         self.sock.send(msg_format % (x+1, y+1, r, g, b))
 
     def send_image(self, image):
