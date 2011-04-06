@@ -51,3 +51,6 @@ class LedMatrix:
     def send_clear(self):
         self.send_command(2, "00" * (2 + 3))
 
+    def change_priority(self, priority):
+        self.send_command(4, "%02x" % priority)
+
