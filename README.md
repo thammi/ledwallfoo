@@ -19,6 +19,8 @@ This is the library. It contains the following features:
   RGB pixels. The data is supposed to be a string(-like) object containing
   binary data.
 * send\_clear(): Resets the whole screen to black
+* change\_priority(): Changes the priority of the connection. Default is 1 and
+  higher priority connections paint over lower priority connections.
 
 The address of the server can be passed to the Object in its constructor, is
 copied from the environment variable LEDWALL\_IP or defaults to 'localhost'.
