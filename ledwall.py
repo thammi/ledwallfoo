@@ -6,18 +6,30 @@ class LedMatrix:
 
     size = (16,15)
 
-    def __init__(self, server=None, port=1338):
+    def __init__(self, server=None, port=1338, lazy_resp=10):
         if server == None:
             if 'LEDWALL_IP' in os.environ:
                 server = os.environ['LEDWALL_IP']
             else:
                 server = "localhost"
 
+        self.lazy_resp = lazy_resp
+        self.hang_resp = 0
+
         self.sock = sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((server, port))
 
     def send_command(self, command, data=""):
-        self.sock.send("%02x" % command + data + "\r\n")
+        sock = self.sock
+        lazy_resp = self.lazy_resp
+
+        sock.send("%02x" % command + data + "\r\n")
+
+        self.hang_resp += 1
+
+        while self.hang_resp > lazy_resp:
+            lines = sock.recv(256).split('\r\n')
+            self.hang_resp -= len(lines)
 
     def send_raw_image(self, raw):
         # quickfix to adjust to current orientation and a bug
