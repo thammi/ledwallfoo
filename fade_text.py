@@ -51,7 +51,7 @@ draw = ImageDraw.Draw(im)
 font = ImageFont.truetype("DejaVuSans.ttf", matrix.size[1])
 draw.setfont(font)
 
-text = "<<</>>" if len(sys.argv) < 2 else sys.argv[1]
+text = "<<</>>" if len(sys.argv) < 2 else sys.argv[1].decode("utf-8")
 
 image_width = matrix.size[0]
 text_width = draw.textsize(text)[0]
