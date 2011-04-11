@@ -50,3 +50,10 @@ A scrolling text with fading colors
 
     ./fade_text.py "My text"
 
+### Image Viewer
+
+A simple image viewer scaling the image down keeping the aspect ratio without
+cropping:
+
+    ./imageviewer.py $IMAGE
+
