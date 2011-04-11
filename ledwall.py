@@ -29,7 +29,7 @@ class LedMatrix:
 
         while self.hang_resp > lazy_resp:
             lines = sock.recv(256).split('\r\n')
-            self.hang_resp -= len(lines)
+            self.hang_resp -= len(lines) - 1
 
     def send_raw_image(self, raw):
         # quickfix to adjust to current orientation and a bug
