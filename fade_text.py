@@ -68,6 +68,7 @@ class FadingText:
         self.fader = ColorFader(colors)
 
     def step(self):
+        matrix = self.matrix
         progress = self.progress
         fader = self.fader
         im = self.im
