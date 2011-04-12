@@ -36,6 +36,9 @@ compatible shell:
 
     export LEDWALL_IP=172.22.99.6
 
+If the environment variable `LEDWALL_PRIORITY` is set the specified priority
+will be set at the initialization of the matrix.
+
 ## Applications
 
 ### Game of Life
