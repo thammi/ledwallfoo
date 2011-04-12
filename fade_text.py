@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import sys
 import time
 
 import Image
@@ -69,6 +68,7 @@ class FadingText:
 
     def step(self):
         matrix = self.matrix
+        text = self.text
         progress = self.progress
         fader = self.fader
         im = self.im
@@ -94,13 +94,17 @@ class FadingText:
             self.step()
             time.sleep(snooze)
 
-if __name__ == '__main__':
+def main(args):
     matrix = LedMatrix()
 
-    if len(sys.argv) < 2:
+    if len(args) == 1:
         text = "<<</>>"
     else:
-        text = u' '.join(arg.decode("utf-8") for arg in sys.argv[1:])
+        text = u' '.join(arg.decode("utf-8") for arg in args[1:])
 
     FadingText(matrix, text).endless()
+
+if __name__ == '__main__':
+    import sys
+    main(sys.argv[1:])
 
