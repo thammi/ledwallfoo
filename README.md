@@ -28,6 +28,14 @@ copied from the environment variable LEDWALL\_IP or defaults to 'localhost'.
 Most quirks of the pentawall protocol will be hidden from the user. Coordinates
 start at 0x0 and the library rotates the image to fit the current orientation.
 
+## Configuration
+
+You should specify the IP address of the pentawall in the environment variable
+`LEDWALL_IP`. If you are at the c3d2 HQ type the following line into your POSIX
+compatible shell:
+
+    export LEDWALL_IP=172.22.99.6
+
 ## Applications
 
 ### Game of Life
