@@ -9,6 +9,9 @@ import ImageFont
 
 from ledwall import LedMatrix
 
+DEF_COLORS = [(0xff, 0x00, 0x00), (0x00, 0xff, 0x00), (0x00, 0x00, 0xff)]
+DEF_FONT = "DejaVuSans.ttf"
+
 class ColorFader:
 
     def __init__(self, colors, fade_steps=40):
@@ -41,36 +44,62 @@ class ColorFader:
 
         return ("#" + "%02x" * 3) % color
 
-matrix = LedMatrix()
+class FadingText:
 
-im = Image.new(mode="RGB", size=matrix.size)
-clean_data = list(im.getdata())
+    def __init__(self, matrix, text, font=DEF_FONT, colors=DEF_COLORS):
+        self.matrix = matrix
+        self.text = text
 
-draw = ImageDraw.Draw(im)
+        self.progress = 0
 
-font = ImageFont.truetype("DejaVuSans.ttf", matrix.size[1])
-draw.setfont(font)
+        self.im = im = Image.new(mode="RGB", size=matrix.size)
+        self.clean_data = list(im.getdata())
 
-text = "<<</>>" if len(sys.argv) < 2 else sys.argv[1].decode("utf-8")
+        self.draw = draw = ImageDraw.Draw(im)
 
-image_width = matrix.size[0]
-text_width = draw.textsize(text)[0]
+        im_font = ImageFont.truetype("DejaVuSans.ttf", matrix.size[1])
+        draw.setfont(im_font)
 
-width = text_width + image_width
+        image_width = matrix.size[0]
+        text_width = draw.textsize(text)[0]
 
-step = 0
+        self.width = text_width + image_width
 
-colors = [(0xff, 0x00, 0x00), (0x00, 0xff, 0x00), (0x00, 0x00, 0xff)]
-fader = ColorFader(colors)
+        self.fader = ColorFader(colors)
 
-while True:
-    draw.text((image_width - step, 0), text, fill=fader.color())
-    matrix.send_image(im)
+    def step(self):
+        progress = self.progress
+        fader = self.fader
+        im = self.im
 
-    step = (step + 1) % width
+        image_width = matrix.size[0]
 
-    fader.step()
+        # draw and send
+        self.draw.text((image_width - progress, 0), text, fill=fader.color())
+        matrix.send_image(im)
 
-    im.putdata(clean_data)
-    time.sleep(0.2)
+        self.progress = (progress + 1) % self.width
+        self.fader.step()
+
+        im.putdata(self.clean_data)
+
+    def endless(self, snooze=0.1):
+        while True:
+            self.step()
+            time.sleep(snooze)
+
+    def scroll(self, rounds=1, snooze=0.1):
+        for _ in range(rounds):
+            self.step()
+            time.sleep(snooze)
+
+if __name__ == '__main__':
+    matrix = LedMatrix()
+
+    if len(sys.argv) < 2:
+        text = "<<</>>"
+    else:
+        text = u' '.join(arg.decode("utf-8") for arg in sys.argv[1:])
+
+    FadingText(matrix, text).endless()
 
