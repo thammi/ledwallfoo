@@ -19,6 +19,9 @@ class LedMatrix:
         self.sock = sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((server, port))
 
+        if 'LEDWALL_PRIORITY' in os.environ:
+            self.change_priority(int(os.environ['LEDWALL_PRIORITY']))
+
     def send_command(self, command, data=""):
         sock = self.sock
         lazy_resp = self.lazy_resp
