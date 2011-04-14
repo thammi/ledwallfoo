@@ -35,20 +35,10 @@ class LedMatrix:
             self.hang_resp -= len(lines) - 1
 
     def send_raw_image(self, raw):
-        # quickfix to adjust to current orientation and a bug
-        width, height = self.size
-        out = StringIO()
-        for x in reversed(range(width)):
-            for y in reversed(range(height)):
-                offset = (x + y * width) * 3
-                out.write(raw[offset:offset+3])
-
-        self.send_command(3, str(out.getvalue()).encode("hex"))
+        self.send_command(3, str(raw).encode("hex"))
 
     def send_pixel(self, (x, y), (r, g, b)):
-        # quickfix! the ledwall is positioned in the wrong direction
         width, height = self.size
-        (x, y) = (width - x - 1, height - y - 1)
         msg_format = "%02x" * (2 + 3)
 
         self.send_command(2, msg_format % (x+1, y+1, r, g, b))
