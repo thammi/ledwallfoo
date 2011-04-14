@@ -20,6 +20,7 @@
 
 import time
 
+import os
 import Image
 import ImageDraw
 import ImageFont
@@ -31,7 +32,12 @@ DEF_FONT = "DejaVuSans.ttf"
 
 class ColorFader:
 
-    def __init__(self, colors, fade_steps=40):
+    def __init__(self, colors, fade_steps=None):
+        if fade_steps == None:
+            if 'FADE_STEPS' in os.environ:
+                fade_steps = int(os.environ['FADE_STEPS'])
+            else:
+                fade_steps = 40
         self.colors = colors
         self.fade_steps = fade_steps
         self.pos = (0, 0)
