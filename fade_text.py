@@ -97,10 +97,10 @@ class FadingText:
 def main(args):
     matrix = LedMatrix()
 
-    if len(args) == 1:
+    if len(args) < 1:
         text = "<<</>>"
     else:
-        text = u' '.join(arg.decode("utf-8") for arg in args[1:])
+        text = u' '.join(arg.decode("utf-8") for arg in args)
 
     FadingText(matrix, text).endless()
 
