@@ -160,6 +160,7 @@ class SnakeGame:
 
     def loop(self):
         snake = self.snake
+        others = self.others
         width, height = self.size
 
         # wait for incoming traffic
@@ -167,7 +168,9 @@ class SnakeGame:
 
         # TODO: actual implementation
         # pick a free player id
-        self.player = player = 1
+        player_is_free = lambda x: x not in others.keys()
+        free_player = filter(player_is_free, range(len(self.colors)))
+        self.player = player = min(free_player)
 
         # TODO: actual implementation
         # get a color
