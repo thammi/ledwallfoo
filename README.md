@@ -68,3 +68,17 @@ cropping:
 
     ./imageviewer.py $IMAGE
 
+### Snake
+
+A snake game with built-in chaotic massive multiplayer experience. To start the
+game simply run:
+
+    ./snake.py
+
+You will automatically play together with everybody else playing in your
+subnet. Every player should use the same output device as each client only
+paints the output of the corresponding player.
+
+The network protocol is based on pure chaos and might have many bugs. Feel free
+to report any undetected collisions and duplicate targets.
+
