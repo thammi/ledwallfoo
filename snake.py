@@ -262,8 +262,9 @@ class SnakeGame:
             # wait some time
             tick = 0.2
             now = time.time()
-            wait = now - now % tick + tick
-            self.idle(wait)
+            wait = tick - now % tick
+            if wait > 0:
+                self.idle(wait)
 
         # shrink back
         while len(snake):
