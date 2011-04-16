@@ -3,6 +3,8 @@
 import curses
 import random
 import time
+import socket
+import select
 
 from ledwall import LedMatrix
 
@@ -15,6 +17,10 @@ class SnakeGame:
         self.scr = None
         self.color = (0x00, 0x00, 0xaa)
         self.target = None
+
+        self.address = ('<broadcast>', 38544)
+        self.sock = sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
     def free_spot(self):
         width, height = self.size
@@ -73,6 +79,24 @@ class SnakeGame:
         self.target = pos
         self.matrix.send_pixel(pos, (0xff, 0xff, 0xff))
 
+    def idle(self, duration):
+        sock = self.sock
+        address = self.address
+
+        now = time.time()
+        target = now - now % duration + duration
+
+        while True:
+            wait = target - time.time()
+
+            if wait <= 0:
+                break
+
+            rlist, _, _ = select.select([sock], [], [], wait)
+
+            if len(rlist):
+                pass
+
     def loop(self):
         snake = self.snake
         width, height = self.size
@@ -128,12 +152,12 @@ class SnakeGame:
 
             # wait some time
             # TODO: constant framerate!
-            time.sleep(0.2)
+            self.idle(0.2)
 
         # shrink back
         while len(snake):
             self.lose_limb()
-            time.sleep(0.1)
+            time.sleep(0.05)
 
 def main(args):
     matrix = LedMatrix()
