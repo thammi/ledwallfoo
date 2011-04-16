@@ -31,6 +31,7 @@ class SnakeGame:
 
         self.create_colors()
 
+        # initialize the socket
         self.sock = sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         sock.bind(('', PORT))
@@ -55,9 +56,11 @@ class SnakeGame:
                 return pos
 
     def is_free(self, pos):
+        # eating ourselves
         if pos in self.snake:
             return False
 
+        # bumbing against other players
         for snake in self.others.values():
             if pos in snake:
                 return False
@@ -70,6 +73,7 @@ class SnakeGame:
 
         key = -1
 
+        # we are interested in the last keystroke
         while True:
             new_key = scr.getch()
 
@@ -82,14 +86,17 @@ class SnakeGame:
 
     def run(self):
         try:
+            # initialize curses environment
             self.scr = scr = curses.initscr()
 
             scr.nodelay(1)
             scr.keypad(1)
             curses.noecho()
 
+            # starting the actual loop
             self.loop()
         finally:
+            # sanitizing the tty again
             curses.endwin()
 
             # vanish from ledmatrix and network
@@ -135,9 +142,11 @@ class SnakeGame:
                 self.receive()
 
     def send(self):
-        io = StringIO.StringIO()
-
+        # broadcasting
         address = ('<broadcast>', PORT)
+
+        # construct snake position message
+        io = StringIO.StringIO()
 
         io.write('S')
         io.write(chr(self.player))
@@ -149,6 +158,7 @@ class SnakeGame:
         msg = io.getvalue()
         self.sock.sendto(msg, address)
 
+        # send target propagation message
         target = self.target
         if target:
             target_ticks = self.target_ticks
@@ -162,13 +172,17 @@ class SnakeGame:
         payload = buf[1:]
 
         if cmd == 'S':
+            # snake position message
             player = ord(payload[0])
             raw_points = map(ord, payload[1:])
 
             self.others[player] = [tuple(raw_points[i:i+2]) for i in range(0, len(raw_points), 2)]
-        if cmd == 'T':
+        elif cmd == 'T':
+            # target propagation message
             ticks, target_x, target_y = struct.unpack('ibb', payload)
 
+            # TODO: target update collision handling/detection
+            # only update if newer
             if ticks > self.target_ticks:
                 self.target = (target_x, target_y)
                 self.target_ticks = ticks
@@ -181,13 +195,11 @@ class SnakeGame:
         # wait for incoming traffic
         self.idle(1)
 
-        # TODO: actual implementation
         # pick a free player id
         player_is_free = lambda x: x not in others.keys()
         free_player = filter(player_is_free, range(len(self.colors)))
         self.player = player = min(free_player)
 
-        # TODO: actual implementation
         # get a color
         self.color = self.colors[player]
 
