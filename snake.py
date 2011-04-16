@@ -5,6 +5,7 @@ import random
 import time
 import socket
 import select
+import StringIO
 
 from ledwall import LedMatrix
 
@@ -13,10 +14,15 @@ class SnakeGame:
     def __init__(self, matrix):
         self.matrix = matrix
         self.size = matrix.size
-        self.snake = []
+
         self.scr = None
-        self.color = (0x00, 0x00, 0xaa)
+
+        self.player = None
+        self.color = None
+
         self.target = None
+        self.snake = []
+        self.others = {}
 
         self.address = ('<broadcast>', 38544)
         self.sock = sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -35,7 +41,11 @@ class SnakeGame:
                 return pos
 
     def is_free(self, pos):
-        return pos not in self.snake
+        for snake in self.snake, self.others.values():
+            if pos in snake:
+                return False
+
+        return True
 
     def get_input(self):
         # TODO: this is madness
@@ -65,6 +75,9 @@ class SnakeGame:
         finally:
             curses.endwin()
 
+            for pos in self.snake:
+                self.matrix.send_pixel(pos, (0x00, 0x00, 0x00))
+
         print "You lose!"
 
     def add_limb(self, pos):
@@ -83,23 +96,63 @@ class SnakeGame:
         sock = self.sock
         address = self.address
 
+        # when to stop?
         now = time.time()
         target = now - now % duration + duration
 
         while True:
+            # how long?
             wait = target - time.time()
 
+            # waiting is over?
             if wait <= 0:
                 break
 
+            # input or timeout
             rlist, _, _ = select.select([sock], [], [], wait)
 
             if len(rlist):
-                pass
+                self.receive()
+
+    def send(self):
+        io = StringIO.StringIO()
+
+        io.write('S')
+        io.write(chr(self.player))
+
+        for point in self.snake:
+            for coord in point:
+                io.write(chr(coord))
+
+        msg = io.getvalue()
+        self.sock.sendto(msg, self.address)
+
+    def receive(self):
+        buf = self.sock.recv(2048)
+
+        cmd = buf[0]
+        payload = buf[1:]
+
+        if cmd == 'S':
+            player = ord(payload[0])
+            raw_points = map(ord, payload[1:])
+
+            self.others[player] = [raw_points[i:i+2] for i in range(len(raw_points), step=2)]
 
     def loop(self):
         snake = self.snake
         width, height = self.size
+
+        # wait for incoming traffic
+        self.idle(1)
+
+        # TODO: actual implementation
+        # pick a free player id
+        self.player = 0
+
+        # TODO: actual implementation
+        # get a color
+        self.color = (0x00, 0x00, 0xff)
 
         # start with one limb
         position = self.free_spot()
@@ -150,6 +203,8 @@ class SnakeGame:
                 # reposition target
                 self.set_target(self.free_spot())
 
+            self.send()
+
             # wait some time
             # TODO: constant framerate!
             self.idle(0.2)
@@ -157,6 +212,7 @@ class SnakeGame:
         # shrink back
         while len(snake):
             self.lose_limb()
+            self.send()
             time.sleep(0.05)
 
 def main(args):
