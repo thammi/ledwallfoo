@@ -9,6 +9,8 @@ import StringIO
 
 from ledwall import LedMatrix
 
+PORT = 38544
+
 class SnakeGame:
 
     def __init__(self, matrix):
@@ -24,9 +26,18 @@ class SnakeGame:
         self.snake = []
         self.others = {}
 
-        self.address = ('<broadcast>', 38544)
+        self.create_colors()
+
         self.sock = sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        sock.bind(('', PORT))
+
+    def create_colors(self):
+        self.colors = colors = []
+
+        for i in range(6):
+            color = (0xff if (i >= 3) != (i % 4 == x) else 0x00 for x in range(3))
+            colors.append(tuple(color))
 
     def free_spot(self):
         width, height = self.size
@@ -75,8 +86,10 @@ class SnakeGame:
         finally:
             curses.endwin()
 
-            for pos in self.snake:
-                self.matrix.send_pixel(pos, (0x00, 0x00, 0x00))
+            # vanish from ledmatrix and network
+            while self.snake:
+                self.lose_limb()
+            self.send()
 
         print "You lose!"
 
@@ -94,7 +107,6 @@ class SnakeGame:
 
     def idle(self, duration):
         sock = self.sock
-        address = self.address
 
         # when to stop?
         now = time.time()
@@ -117,6 +129,8 @@ class SnakeGame:
     def send(self):
         io = StringIO.StringIO()
 
+        address = ('<broadcast>', PORT)
+
         io.write('S')
         io.write(chr(self.player))
 
@@ -125,10 +139,10 @@ class SnakeGame:
                 io.write(chr(coord))
 
         msg = io.getvalue()
-        self.sock.sendto(msg, self.address)
+        self.sock.sendto(msg, address)
 
     def receive(self):
-        buf = self.sock.recv(2048)
+        buf, address = self.sock.recvfrom(2048)
 
         cmd = buf[0]
         payload = buf[1:]
@@ -137,7 +151,7 @@ class SnakeGame:
             player = ord(payload[0])
             raw_points = map(ord, payload[1:])
 
-            self.others[player] = [raw_points[i:i+2] for i in range(len(raw_points), step=2)]
+            self.others[player] = [tuple(raw_points[i:i+2]) for i in range(0, len(raw_points), 2)]
 
     def loop(self):
         snake = self.snake
@@ -148,15 +162,16 @@ class SnakeGame:
 
         # TODO: actual implementation
         # pick a free player id
-        self.player = 0
+        self.player = player = 1
 
         # TODO: actual implementation
         # get a color
-        self.color = (0x00, 0x00, 0xff)
+        self.color = self.colors[player]
 
         # start with one limb
         position = self.free_spot()
         self.add_limb(position)
+        self.send()
 
         # add the target if neccessary
         if self.target == None:
