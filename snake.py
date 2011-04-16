@@ -52,7 +52,10 @@ class SnakeGame:
                 return pos
 
     def is_free(self, pos):
-        for snake in self.snake, self.others.values():
+        if pos in self.snake:
+            return False
+
+        for snake in self.others.values():
             if pos in snake:
                 return False
 
