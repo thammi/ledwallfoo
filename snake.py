@@ -6,6 +6,7 @@ import time
 import socket
 import select
 import StringIO
+import struct
 
 from ledwall import LedMatrix
 
@@ -23,6 +24,8 @@ class SnakeGame:
         self.color = None
 
         self.target = None
+        self.target_ticks = 0
+
         self.snake = []
         self.others = {}
 
@@ -94,7 +97,7 @@ class SnakeGame:
             if self.snake:
                 while snake:
                     self.lose_limb()
-                send()
+                self.send()
 
         print "You lose!"
 
@@ -108,6 +111,7 @@ class SnakeGame:
 
     def set_target(self, pos):
         self.target = pos
+        self.target_ticks += 1
         self.matrix.send_pixel(pos, (0xff, 0xff, 0xff))
 
     def idle(self, duration):
@@ -146,6 +150,12 @@ class SnakeGame:
         msg = io.getvalue()
         self.sock.sendto(msg, address)
 
+        target = self.target
+        if target:
+            target_ticks = self.target_ticks
+            msg = 'T' + struct.pack('ibb', target_ticks, target[0], target[1])
+            self.sock.sendto(msg, address)
+
     def receive(self):
         buf, address = self.sock.recvfrom(2048)
 
@@ -157,6 +167,12 @@ class SnakeGame:
             raw_points = map(ord, payload[1:])
 
             self.others[player] = [tuple(raw_points[i:i+2]) for i in range(0, len(raw_points), 2)]
+        if cmd == 'T':
+            ticks, target_x, target_y = struct.unpack('ibb', payload)
+
+            if ticks > self.target_ticks:
+                self.target = (target_x, target_y)
+                self.target_ticks = ticks
 
     def loop(self):
         snake = self.snake
@@ -181,8 +197,12 @@ class SnakeGame:
         self.add_limb(position)
         self.send()
 
-        # add the target if neccessary
+        # are we the first?
         if self.target == None:
+            # clean up
+            self.matrix.send_clear()
+
+            # set initial target
             self.set_target(self.free_spot())
 
         # go north
@@ -240,7 +260,6 @@ class SnakeGame:
 
 def main(args):
     matrix = LedMatrix()
-    matrix.send_clear()
 
     game = SnakeGame(matrix)
     game.run()
