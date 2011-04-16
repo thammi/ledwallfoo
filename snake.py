@@ -90,9 +90,11 @@ class SnakeGame:
             curses.endwin()
 
             # vanish from ledmatrix and network
-            while self.snake:
-                self.lose_limb()
-            self.send()
+            snake = self.snake
+            if self.snake:
+                while snake:
+                    self.lose_limb()
+                send()
 
         print "You lose!"
 
