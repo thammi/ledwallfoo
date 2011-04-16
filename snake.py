@@ -118,8 +118,7 @@ class SnakeGame:
         sock = self.sock
 
         # when to stop?
-        now = time.time()
-        target = now - now % duration + duration
+        target = time.time() + duration
 
         while True:
             # how long?
@@ -249,8 +248,10 @@ class SnakeGame:
             self.send()
 
             # wait some time
-            # TODO: constant framerate!
-            self.idle(0.2)
+            tick = 0.2
+            now = time.time()
+            wait = now - now % tick + tick
+            self.idle(wait)
 
         # shrink back
         while len(snake):
