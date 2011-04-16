@@ -193,7 +193,7 @@ class SnakeGame:
         width, height = self.size
 
         # wait for incoming traffic
-        self.idle(1)
+        self.idle(0.5)
 
         # pick a free player id
         player_is_free = lambda x: x not in others.keys()
