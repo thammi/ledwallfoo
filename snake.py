@@ -26,9 +26,11 @@ import select
 import StringIO
 import struct
 
-from ledwall import LedMatrix
+from ledwall import LedMatrix, brightness_adjust
 
 PORT = 38544
+
+BRIGHT = int(brightness_adjust() * 0xff)
 
 KEY_MAP = {
         (0, -1): [curses.KEY_UP, ord('w'), ord('k')],
@@ -68,7 +70,7 @@ class SnakeGame:
         self.colors = colors = []
 
         for i in range(6):
-            color = (0xff if (i >= 3) != (i % 3 == x) else 0x00 for x in range(3))
+            color = (BRIGHT if (i >= 3) != (i % 3 == x) else 0x00 for x in range(3))
             colors.append(tuple(color))
 
     def free_spot(self):
@@ -152,7 +154,7 @@ class SnakeGame:
     def set_target(self, pos):
         self.target = pos
         self.target_ticks += 1
-        self.matrix.send_pixel(pos, (0xff, 0xff, 0xff))
+        self.matrix.send_pixel(pos, (BRIGHT,) * 3)
 
     def idle(self, duration):
         sock = self.sock
@@ -239,13 +241,13 @@ class SnakeGame:
         # wait for incoming traffic
         self.idle(0.5)
 
-        # pick a free player id
+        # pick a free player id ...
         player_is_free = lambda x: x not in others.keys()
 
         # check whether preferred player is available
         if preferred_player != None:
             if player_is_free(preferred_player):
-                self.player = player = preferred_player
+                self.player = preferred_player
 
         # pick random player if none chosen yet
         if self.player == None:
