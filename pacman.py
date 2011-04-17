@@ -85,3 +85,5 @@ pacman = Pacman(matrix)
 
 const_loop(pacman.step, 0.2)
 
+matrix.close()
+

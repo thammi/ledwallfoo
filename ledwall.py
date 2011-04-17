@@ -41,6 +41,9 @@ class LedMatrix:
         if 'LEDWALL_PRIORITY' in os.environ:
             self.change_priority(int(os.environ['LEDWALL_PRIORITY']))
 
+    def close(self):
+        self.sock.close()
+
     def send_command(self, command, data=""):
         sock = self.sock
         lazy_resp = self.lazy_resp
