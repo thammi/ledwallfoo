@@ -12,6 +12,13 @@ from ledwall import LedMatrix
 
 PORT = 38544
 
+KEY_MAP = {
+        (0, -1): [curses.KEY_UP, ord('w'), ord('k')],
+        (0, 1): [curses.KEY_DOWN, ord('s'), ord('j')],
+        (-1, 0): [curses.KEY_LEFT, ord('a'), ord('h')],
+        (1, 0): [curses.KEY_RIGHT, ord('d'), ord('l')],
+        }
+
 class SnakeGame:
 
     def __init__(self, matrix):
@@ -219,13 +226,11 @@ class SnakeGame:
         # go north
         direction = (0, -1)
 
-        # the key mappings
-        key_map = {
-                curses.KEY_UP: (0, -1),
-                curses.KEY_DOWN: (0, 1),
-                curses.KEY_RIGHT: (1, 0),
-                curses.KEY_LEFT: (-1, 0),
-                }
+        # creating key mappings
+        key_map = {}
+        for direction, keys in KEY_MAP.iteritems():
+            for key in keys:
+                key_map[key] = direction
 
         while True:
             # where to go next?
