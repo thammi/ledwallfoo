@@ -21,9 +21,11 @@
 import math
 import time
 
-from ledwall import LedMatrix, const_loop
+from ledwall import LedMatrix, const_loop, brightness_adjust
 
 # WARNING: this code is _very_ hacky!!!
+
+BRIGHT = int(brightness_adjust() * 0xff)
 
 class Pacman:
 
@@ -74,7 +76,7 @@ class Pacman:
                             painted = True
 
                             # edge fading
-                            max_intensity = 0xaa
+                            max_intensity = BRIGHT
                             rad = size / 2.0
                             intensity = math.sqrt((rad - dist) / rad) * 2 * max_intensity
                             intensity = min(intensity, max_intensity)
