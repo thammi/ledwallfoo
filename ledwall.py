@@ -27,6 +27,7 @@ class LedMatrix:
     """Represents a connection to a led matrix"""
 
     size = (16,15)
+    """The size of the led matrix"""
 
     def __init__(self, server=None, port=1338, lazy_resp=10):
         """Connect to the led matrix
