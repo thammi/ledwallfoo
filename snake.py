@@ -21,11 +21,11 @@ KEY_MAP = {
 
 class SnakeGame:
 
-    def __init__(self, matrix, buffer_input=True, preferred_color=None):
+    def __init__(self, matrix, buffer_input=True, preferred_player=None):
         self.matrix = matrix
         self.size = matrix.size
         self.buffer_input = buffer_input
-        self.preferred_color = preferred_color
+        self.preferred_player = preferred_player
 
         self.scr = None
 
@@ -202,6 +202,7 @@ class SnakeGame:
     def loop(self):
         snake = self.snake
         others = self.others
+        preferred_player = self.preferred_player
         width, height = self.size
 
         # wait for incoming traffic
@@ -209,11 +210,19 @@ class SnakeGame:
 
         # pick a free player id
         player_is_free = lambda x: x not in others.keys()
-        free_player = filter(player_is_free, range(len(self.colors)))
-        self.player = player = min(free_player)
 
-        # get a color
-        self.color = self.colors[player]
+        # check whether preferred player is available
+        if preferred_player != None:
+            if player_is_free(preferred_player):
+                self.player = player = preferred_player
+
+        # pick random player if none chosen yet
+        if self.player == None:
+            free_player = filter(player_is_free, range(len(self.colors)))
+            self.player = random.choice(free_player)
+
+        # pick a color
+        self.color = self.colors[self.player]
 
         # start with one limb
         position = self.free_spot()
