@@ -21,9 +21,11 @@ KEY_MAP = {
 
 class SnakeGame:
 
-    def __init__(self, matrix):
+    def __init__(self, matrix, buffer_input=True, preferred_color=None):
         self.matrix = matrix
         self.size = matrix.size
+        self.buffer_input = buffer_input
+        self.preferred_color = preferred_color
 
         self.scr = None
 
@@ -75,21 +77,24 @@ class SnakeGame:
         return True
 
     def get_input(self):
-        # TODO: this is madness
-        scr = self.scr
+        if self.buffer_input:
+            return self.scr.getch()
+        else:
+            # TODO: this is madness
+            scr = self.scr
 
-        key = -1
+            key = -1
 
-        # we are interested in the last keystroke
-        while True:
-            new_key = scr.getch()
+            # we are interested in the last keystroke
+            while True:
+                new_key = scr.getch()
 
-            if new_key == -1:
-                break
-            else:
-                key = new_key
+                if new_key == -1:
+                    break
+                else:
+                    key = new_key
 
-        return key
+            return key
 
     def run(self):
         try:
@@ -108,7 +113,7 @@ class SnakeGame:
 
             # vanish from ledmatrix and network
             snake = self.snake
-            if self.snake:
+            if snake:
                 while snake:
                     self.lose_limb()
                 self.send()
