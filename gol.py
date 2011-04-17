@@ -3,7 +3,7 @@
 import sys
 import time
 
-from ledwall import LedMatrix
+from ledwall import LedMatrix, const_loop
 
 class GameOfLife:
 
@@ -69,14 +69,13 @@ class GameOfLife:
                 elif prox == 3:
                     self.create(x, y)
 
+        return True
+
 matrix = LedMatrix()
 matrix.send_clear()
 
 game = GameOfLife(matrix)
 game.load(sys.argv[1])
 
-while True:
-    game.step()
-    time.sleep(0.2)
-    print "step"
+const_loop(game.step, 0.2)
 
