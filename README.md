@@ -75,6 +75,13 @@ game simply run:
 
     ./snake.py
 
+You can add `-p [0-5]` to prefer a player id and its color. A random free
+player id will be assigned to you if you did not specify an id or it was
+already taken.
+
+With `--direct` or `-d` you deactivate input buffering which is more direct and
+might be more suitable for you.
+
 You will automatically play together with everybody else playing in your
 subnet. Every player should use the same output device as each client only
 paints the output of the corresponding player.
