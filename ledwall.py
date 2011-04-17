@@ -1,6 +1,25 @@
 import os
 import socket
+import time
 from StringIO import StringIO
+
+def const_loop(fun, tick):
+    while True:
+        # schedule the next tick
+        now = time.time()
+        next_tick = now + tick - now % tick
+
+        # do something
+        res = fun()
+
+        # stop on False
+        if not res:
+            break
+
+        # wait until next tick
+        wait = next_tick - time.time()
+        if wait > 0:
+            time.sleep(wait)
 
 class LedMatrix:
 
