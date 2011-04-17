@@ -292,9 +292,26 @@ class SnakeGame:
             time.sleep(0.05)
 
 def main(args):
+    from optparse import OptionParser
+
+    optp = OptionParser()
+
+    optp.add_option("-p", "--player",
+            help="Set preferred player (0-5)",
+            metavar="PLAYER",
+            type="int",
+            default=None)
+
+    optp.add_option("-d", "--direct-input",
+            help="Get more direct input",
+            action="store_false",
+            default=True)
+
+    (options, args) = optp.parse_args()
+
     matrix = LedMatrix()
 
-    game = SnakeGame(matrix)
+    game = SnakeGame(matrix, options.direct_input, options.player)
     game.run()
 
 if __name__ == '__main__':
