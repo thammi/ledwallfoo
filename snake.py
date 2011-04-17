@@ -49,7 +49,7 @@ class SnakeGame:
         self.colors = colors = []
 
         for i in range(6):
-            color = (0xff if (i >= 3) != (i % 4 == x) else 0x00 for x in range(3))
+            color = (0xff if (i >= 3) != (i % 3 == x) else 0x00 for x in range(3))
             colors.append(tuple(color))
 
     def free_spot(self):
