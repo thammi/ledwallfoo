@@ -309,11 +309,19 @@ def main(args):
             action="store_false",
             default=True)
 
+    optp.add_option("--priority",
+            help="Change priority, default is 2",
+            metavar="PRIORITY",
+            type="int",
+            default=2)
+
     (options, args) = optp.parse_args()
 
     matrix = LedMatrix()
 
     try:
+        matrix.change_priority(options.priority)
+
         game = SnakeGame(matrix, options.direct_input, options.player)
         game.run()
     finally:
