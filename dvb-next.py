@@ -27,5 +27,8 @@ def fetchDVBData():
 
 if __name__ == '__main__':
     matrix = LedMatrix()
-    ft = FadingText(matrix, fetchDVBData()).endless()
+    try:
+        ft = FadingText(matrix, fetchDVBData()).endless()
+    finally:
+        matrix.close()
 

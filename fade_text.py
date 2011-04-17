@@ -102,7 +102,10 @@ def main(args):
     else:
         text = u' '.join(arg.decode("utf-8") for arg in args)
 
-    FadingText(matrix, text).endless()
+    try:
+        FadingText(matrix, text).endless()
+    finally:
+        matrix.close()
 
 if __name__ == '__main__':
     import sys

@@ -72,10 +72,14 @@ class GameOfLife:
         return True
 
 matrix = LedMatrix()
-matrix.send_clear()
 
-game = GameOfLife(matrix)
-game.load(sys.argv[1])
+try:
+    matrix.send_clear()
 
-const_loop(game.step, 0.2)
+    game = GameOfLife(matrix)
+    game.load(sys.argv[1])
+
+    const_loop(game.step, 0.2)
+finally:
+    matrix.close()
 

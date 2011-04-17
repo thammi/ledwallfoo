@@ -313,8 +313,11 @@ def main(args):
 
     matrix = LedMatrix()
 
-    game = SnakeGame(matrix, options.direct_input, options.player)
-    game.run()
+    try:
+        game = SnakeGame(matrix, options.direct_input, options.player)
+        game.run()
+    finally:
+        matrix.close()
 
 if __name__ == '__main__':
     import sys
