@@ -3,7 +3,7 @@
 import math
 import time
 
-from ledwall import LedMatrix
+from ledwall import LedMatrix, const_loop
 
 # WARNING: this code is _very_ hacky!!!
 
@@ -83,6 +83,5 @@ class Pacman:
 matrix = LedMatrix()
 pacman = Pacman(matrix)
 
-while pacman.step():
-    time.sleep(0.2)
+const_loop(pacman.step, 0.2)
 
