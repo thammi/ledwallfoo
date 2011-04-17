@@ -20,6 +20,8 @@
 import os
 import socket
 import time
+import datetime
+import math
 from StringIO import StringIO
 
 def const_loop(fun, tick):
@@ -41,6 +43,17 @@ def const_loop(fun, tick):
         wait = next_tick - time.time()
         if wait > 0:
             time.sleep(wait)
+
+def cramp(value, floor, top):
+    """Fits value between floor and top"""
+    return min(max(value, floor), top)
+
+def brightness_adjust():
+    """Tries to guess a sane brightness adjustment to the time of day"""
+    now = datetime.datetime.now()
+    progress = now.hour * 60 + now.minute 
+    curve = math.sin(progress * math.pi / 60 / 24)
+    return cramp(0.5 +  curve / 2, 0.75, 1)
 
 class LedMatrix:
     """Represents a connection to a led matrix"""
