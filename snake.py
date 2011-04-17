@@ -118,6 +118,8 @@ class SnakeGame:
                     self.lose_limb()
                 self.send()
 
+            self.sock.close()
+
         print "You lose!"
 
     def add_limb(self, pos):
