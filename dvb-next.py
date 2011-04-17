@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# TODO: licence and copyright by core
 
 import json
 import urllib

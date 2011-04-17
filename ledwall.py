@@ -1,3 +1,22 @@
+###############################################################################
+##
+##  Copyright (C) 2011  Thammi
+##
+##  This program is free software: you can redistribute it and/or modify
+##  it under the terms of the GNU General Public License as published by
+##  the Free Software Foundation, either version 3 of the License, or
+##  (at your option) any later version.
+##
+##  This program is distributed in the hope that it will be useful,
+##  but WITHOUT ANY WARRANTY; without even the implied warranty of
+##  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##  GNU General Public License for more details.
+##
+##  You should have received a copy of the GNU General Public License
+##  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+##
+###############################################################################
+
 import os
 import socket
 import time
@@ -31,7 +50,7 @@ class LedMatrix:
 
     def __init__(self, server=None, port=1338, lazy_resp=10):
         """Connect to the led matrix
-        
+
         The address of the ledwall is:
             1. the parameter server
             2. the environment variable LEDWALL_IP
@@ -78,10 +97,10 @@ class LedMatrix:
 
     def send_raw_image(self, raw):
         """Writes a raw image on the led matrix.
-        
+
         The image consists of $height lines of $width RGB pixels in a string
         like object containing binary data.
-        
+
         """
         self.send_command(3, str(raw).encode("hex"))
 
