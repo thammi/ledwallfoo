@@ -41,33 +41,6 @@ will be set at the initialization of the matrix.
 
 ## Applications
 
-### Game of Life
-
-Conways Game of Life wrapped to fit the screen. Start it with:
-
-    ./gol.py $SEED
-
-$SEED is the initial configuration file. Some seeds are in `gol_seeds/`.
-
-### Pacman
-
-A pacman eating the previos content of the ledwall
-
-    ./pacman.py
-
-### Fading Text
-
-A scrolling text with fading colors
-
-    ./fade_text.py "My text"
-
-### Image Viewer
-
-A simple image viewer scaling the image down keeping the aspect ratio without
-cropping:
-
-    ./imageviewer.py $IMAGE
-
 ### Snake
 
 A snake game with built-in chaotic massive multiplayer experience. To start the
@@ -88,4 +61,31 @@ paints the output of the corresponding player.
 
 The network protocol is based on pure chaos and might have many bugs. Feel free
 to report any undetected collisions and duplicate targets.
+
+### Pacman
+
+A pacman eating the previos content of the ledwall
+
+    ./pacman.py
+
+### Game of Life
+
+Conways Game of Life wrapped to fit the screen. Start it with:
+
+    ./gol.py $SEED
+
+$SEED is the initial configuration file. Some seeds are in `gol_seeds/`.
+
+### Fading Text
+
+A scrolling text with fading colors
+
+    ./fade_text.py "My text"
+
+### Image Viewer
+
+A simple image viewer scaling the image down keeping the aspect ratio without
+cropping:
+
+    ./imageviewer.py $IMAGE
 
