@@ -61,6 +61,7 @@ class SnakeGame:
         # initialize the socket
         self.sock = sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.bind(('', PORT))
 
     def create_colors(self):
@@ -177,47 +178,57 @@ class SnakeGame:
         # broadcasting
         address = ('<broadcast>', PORT)
 
-        # construct snake position message
+        # construct the message
         io = StringIO.StringIO()
 
+        # adding magic number
         io.write('S')
+
+        # adding player info
         io.write(chr(self.player))
 
+        # adding target information
+        target = self.target
+        if target:
+            target_ticks = self.target_ticks
+            io.write(struct.pack('ibb', target_ticks, target[0], target[1]))
+        else:
+            io.write('\0' * 6)
+
+        # adding taken space
         for point in self.snake:
             for coord in point:
                 io.write(chr(coord))
 
-        msg = io.getvalue()
-        self.sock.sendto(msg, address)
-
-        # send target propagation message
-        target = self.target
-        if target:
-            target_ticks = self.target_ticks
-            msg = 'T' + struct.pack('ibb', target_ticks, target[0], target[1])
-            self.sock.sendto(msg, address)
+        # send it out
+        self.sock.sendto(io.getvalue(), address)
 
     def receive(self):
         buf, address = self.sock.recvfrom(2048)
 
         cmd = buf[0]
-        payload = buf[1:]
 
         if cmd == 'S':
-            # snake position message
-            player = ord(payload[0])
-            raw_points = map(ord, payload[1:])
+            # split up message
+            player_part = buf[1]
+            target_part = buf[2:8]
+            space_part = buf[8:]
 
-            self.others[player] = [tuple(raw_points[i:i+2]) for i in range(0, len(raw_points), 2)]
-        elif cmd == 'T':
+            # snake position message
+            player = ord(player_part)
+
             # target propagation message
-            ticks, target_x, target_y = struct.unpack('ibb', payload)
+            ticks, target_x, target_y = struct.unpack('ibb', target_part)
 
             # TODO: target update collision handling/detection
             # only update if newer
             if ticks > self.target_ticks:
                 self.target = (target_x, target_y)
                 self.target_ticks = ticks
+
+            raw_points = map(ord, space_part)
+            slices = range(0, len(raw_points), 2)
+            self.others[player] = [tuple(raw_points[i:i+2]) for i in slices]
 
     def loop(self):
         snake = self.snake
