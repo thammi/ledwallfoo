@@ -26,9 +26,6 @@ import select
 import StringIO
 import struct
 
-# TODO: i do not like threading, sfx only! will be removed someday ...
-import thread
-
 from ledwall import LedMatrix, brightness_adjust
 
 PORT = 38544
@@ -42,26 +39,41 @@ KEY_MAP = {
         (1, 0): [curses.KEY_RIGHT, ord('d'), ord('l')],
         }
 
-def sfx(game):
-    snake = game.snake
-    matrix = game.matrix
+TICK = 0.2
 
-    color = game.color
-    bright = tuple(min(c + BRIGHT * 0.5, BRIGHT) for c in color)
+class AppleFx:
 
-    get_limb = lambda n: snake[-n-1] if n < len(snake) else None
+    def __init__(self, game):
+        self.matrix = matrix = game.matrix
+        self.snake = snake = game.snake
+        self.color = color = game.color
 
-    pos = 0
-    cur = get_limb(pos)
+        get_limb = lambda n: snake[-n-1] if n < len(snake) else None
+        self.get_limb = get_limb
 
-    while cur:
-        # highlight the limb
+        bright = tuple(min(c + BRIGHT * 0.5, BRIGHT) for c in color)
+        self.bright = bright
+
+        self.pos = pos = 0
+        self.cur = cur = self.get_limb(pos)
+
+        # highlight the first limb
         matrix.send_pixel(cur, bright)
 
-        time.sleep(0.1)
+    def step(self):
+        snake = self.snake
+        matrix = self.matrix
+        color = self.color
+        bright = self.bright
 
-        # reset to normal color
-        if cur in snake:
+        get_limb = self.get_limb
+
+        pos = self.pos
+        cur = self.cur
+
+
+        # reset previous to normal color
+        if self.cur in snake:
             matrix.send_pixel(cur, color)
 
         # check whether the snake moved
@@ -71,6 +83,19 @@ def sfx(game):
         # move the highlight
         pos += 1
         cur = get_limb(pos)
+
+        # update the values
+        self.pos = pos
+        self.cur = cur
+
+        # are we at the end?
+        if cur:
+            # highlight the limb
+            matrix.send_pixel(cur, bright)
+
+            return True
+        else:
+            return False
 
 class SnakeGame:
 
@@ -87,6 +112,8 @@ class SnakeGame:
 
         self.target = None
         self.target_ticks = 0
+
+        self.animations = []
 
         self.snake = []
         self.others = {}
@@ -226,6 +253,29 @@ class SnakeGame:
             if len(rlist):
                 self.receive()
 
+    def idle_tick(self, tick):
+        now = time.time()
+        wait = tick - now % tick
+        if wait > 0:
+            self.idle(wait)
+
+    def animate(self):
+        animations = self.animations
+
+        del_list = []
+
+        for index, animation in enumerate(animations):
+            # activate animation
+            res = animation.step()
+
+            # list for deletion if False returned
+            if not res:
+                del_list.append(index)
+
+        # delete
+        for index in reversed(del_list):
+            del animations[index]
+
     def send(self):
         # broadcasting
         address = ('<broadcast>', PORT)
@@ -285,8 +335,11 @@ class SnakeGame:
     def loop(self):
         snake = self.snake
         others = self.others
+        animations = self.animations
         preferred_player = self.preferred_player
         width, height = self.size
+
+        half_tick = TICK / 2
 
         # wait for incoming traffic
         self.idle(0.5)
@@ -360,7 +413,8 @@ class SnakeGame:
                 self.set_target(self.free_spot())
 
                 # start the special effects
-                thread.start_new_thread(sfx, (self,))
+                sfx = AppleFx(self)
+                animations.append(sfx)
 
             # repaint target from time to time
             if random.randint(0, 10) == 0:
@@ -369,17 +423,25 @@ class SnakeGame:
             self.send()
 
             # wait some time
-            tick = 0.2
-            now = time.time()
-            wait = tick - now % tick
-            if wait > 0:
-                self.idle(wait)
+            self.idle_tick(half_tick)
+            self.animate()
+
+            self.idle_tick(half_tick)
+            self.animate()
 
         # shrink back
+        quarter_tick = TICK / 4
+        parity = False
         while len(snake):
             self.lose_limb()
             self.send()
-            time.sleep(0.05)
+
+            if parity:
+                self.animate()
+
+            parity = not parity
+
+            time.sleep(quarter_tick)
 
 def main(args):
     from optparse import OptionParser
