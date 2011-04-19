@@ -193,6 +193,19 @@ class SnakeGame:
         self.target_ticks += 1
         self.matrix.send_pixel(pos, (BRIGHT,) * 3)
 
+    def assure_target(self):
+        surrounding = lambda i: range(i - 1, i + 2)
+        target_x, target_y = self.target
+
+        # check whether repaint is safe
+        for x in surrounding(target_x):
+            for y in surrounding(target_y):
+                if not self.is_free((x, y)):
+                    break
+        else:
+            # actual repaint
+            self.matrix.send_pixel(self.target, (BRIGHT,)*3)
+
     def idle(self, duration):
         sock = self.sock
 
@@ -346,7 +359,12 @@ class SnakeGame:
                 # reposition target
                 self.set_target(self.free_spot())
 
+                # start the special effects
                 thread.start_new_thread(sfx, (self,))
+
+            # repaint target from time to time
+            if random.randint(0, 10) == 0:
+                self.assure_target()
 
             self.send()
 
