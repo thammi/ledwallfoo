@@ -26,6 +26,9 @@ import select
 import StringIO
 import struct
 
+# TODO: i do not like threading, sfx only! will be removed someday ...
+import thread
+
 from ledwall import LedMatrix, brightness_adjust
 
 PORT = 38544
@@ -38,6 +41,36 @@ KEY_MAP = {
         (-1, 0): [curses.KEY_LEFT, ord('a'), ord('h')],
         (1, 0): [curses.KEY_RIGHT, ord('d'), ord('l')],
         }
+
+def sfx(game):
+    snake = game.snake
+    matrix = game.matrix
+
+    color = game.color
+    bright = tuple(min(c + BRIGHT * 0.5, BRIGHT) for c in color)
+
+    get_limb = lambda n: snake[-n-1] if n < len(snake) else None
+
+    pos = 0
+    cur = get_limb(pos)
+
+    while cur:
+        # highlight the limb
+        matrix.send_pixel(cur, bright)
+
+        time.sleep(0.1)
+
+        # reset to normal color
+        if cur in snake:
+            matrix.send_pixel(cur, color)
+
+        # check whether the snake moved
+        if cur != get_limb(pos):
+            pos += 1
+
+        # move the highlight
+        pos += 1
+        cur = get_limb(pos)
 
 class SnakeGame:
 
@@ -308,6 +341,8 @@ class SnakeGame:
             else:
                 # reposition target
                 self.set_target(self.free_spot())
+
+                thread.start_new_thread(sfx, (self,))
 
             self.send()
 
