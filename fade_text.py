@@ -32,12 +32,7 @@ DEF_FONT = "DejaVuSans.ttf"
 
 class ColorFader:
 
-    def __init__(self, colors, fade_steps=None):
-        if fade_steps == None:
-            if 'FADE_STEPS' in os.environ:
-                fade_steps = int(os.environ['FADE_STEPS'])
-            else:
-                fade_steps = 40
+    def __init__(self, colors, fade_steps=40):
         self.colors = colors
         self.fade_steps = fade_steps
         self.pos = (0, 0)
@@ -69,7 +64,7 @@ class ColorFader:
 
 class FadingText:
 
-    def __init__(self, matrix, text, font=DEF_FONT, colors=DEF_COLORS):
+    def __init__(self, matrix, text, fade_steps=40, font=DEF_FONT, colors=DEF_COLORS):
         self.matrix = matrix
         self.text = text
 
@@ -88,7 +83,7 @@ class FadingText:
 
         self.width = text_width + image_width
 
-        self.fader = ColorFader(colors)
+        self.fader = ColorFader(colors, fade_steps)
 
     def step(self):
         matrix = self.matrix
@@ -119,7 +114,26 @@ class FadingText:
             time.sleep(snooze)
 
 def main(args):
+    from optparse import OptionParser
+
+    optp = OptionParser()
+
+    optp.add_option("-s", "--fade_steps",
+            help="Set preferred number of fade-steps",
+            metavar="FADE_STEPS",
+            type="int",
+            default=40)
+            
+    optp.add_option("--priority",
+            help="Change priority, default is 2",
+            metavar="PRIORITY",
+            type="int",
+            default=2)
+
+    (options, args) = optp.parse_args()
+
     matrix = LedMatrix()
+    matrix.change_priority(options.priority)
 
     if len(args) < 1:
         text = "<<</>>"
@@ -127,7 +141,7 @@ def main(args):
         text = u' '.join(arg.decode("utf-8") for arg in args)
 
     try:
-        FadingText(matrix, text).endless()
+        FadingText(matrix, text, options.fade_steps).endless()
     finally:
         matrix.close()
 
