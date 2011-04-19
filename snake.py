@@ -102,8 +102,12 @@ class SnakeGame:
     def create_colors(self):
         self.colors = colors = []
 
-        for i in range(6):
-            color = (BRIGHT if (i >= 3) != (i % 3 == x) else 0x00 for x in range(3))
+        for i in range(3):
+            color = (BRIGHT if i == x else 0x00 for x in range(3))
+            colors.append(tuple(color))
+
+        for i in range(3):
+            color = (BRIGHT * 0.8 if i != x else 0x00 for x in range(3))
             colors.append(tuple(color))
 
     def free_spot(self):
