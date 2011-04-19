@@ -103,7 +103,7 @@ class SnakeGame:
         self.colors = colors = []
 
         for i in range(3):
-            color = (BRIGHT if i == x else 0x00 for x in range(3))
+            color = (BRIGHT * 0.8 if i == x else 0x00 for x in range(3))
             colors.append(tuple(color))
 
         for i in range(3):
