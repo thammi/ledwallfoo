@@ -64,7 +64,7 @@ class ColorFader:
 
 class FadingText:
 
-    def __init__(self, matrix, text, fade_steps=40, font=DEF_FONT, colors=DEF_COLORS):
+    def __init__(self, matrix, text, fade_steps=40,colors=DEF_COLORS, font=DEF_FONT):
         self.matrix = matrix
         self.text = text
 
@@ -113,6 +113,17 @@ class FadingText:
             self.step()
             time.sleep(snooze)
 
+def parse_colors(inp):
+    colors = []
+    for j in range(len(inp)):
+       buff = []
+       col = inp[j]
+       for i in range(3):
+          buff.append(int(col[i*2:i*2+2],16))
+       colors.append(tuple(buff))
+    return colors
+
+
 def main(args):
     from optparse import OptionParser
 
@@ -129,9 +140,26 @@ def main(args):
             metavar="PRIORITY",
             type="int",
             default=2)
+            
+ #TODO:colors via commandlineparam
+    optp.add_option("--color",
+            help="Change shown colors; default is R to G to B",
+            action="append",
+            metavar="COLOR")
 
     (options, args) = optp.parse_args()
 
+    colorin = options.color
+    print colorin
+    
+    if colorin!=None:
+         colors = parse_colors(colorin)
+         print "Your colors are",colors[:]
+    else:
+         colors = DEF_COLORS
+         print "Your colors are",colors[:]
+         
+    
     matrix = LedMatrix()
     matrix.change_priority(options.priority)
 
@@ -141,7 +169,7 @@ def main(args):
         text = u' '.join(arg.decode("utf-8") for arg in args)
 
     try:
-        FadingText(matrix, text, options.fade_steps).endless()
+        FadingText(matrix, text, options.fade_steps, colors).endless()
     finally:
         matrix.close()
 
