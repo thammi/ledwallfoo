@@ -148,12 +148,9 @@ def main(args):
             metavar="COLOR")
 
     (options, args) = optp.parse_args()
-
-    colorin = options.color
-    print colorin
     
-    if colorin!=None:
-         colors = parse_colors(colorin)
+    if options.color!=None:
+         colors = parse_colors(options.color)
          print "Your colors are",colors[:]
     else:
          colors = DEF_COLORS
