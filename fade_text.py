@@ -141,7 +141,6 @@ def main(args):
             type="int",
             default=2)
             
- #TODO:colors via commandlineparam
     optp.add_option("--color",
             help="Change shown colors; default is R to G to B",
             action="append",
