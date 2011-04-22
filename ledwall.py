@@ -152,3 +152,14 @@ class LedMatrix:
         """
         self.send_command(4, "%02x" % priority)
 
+    def record_start(self):
+        """
+        Starts recording of current stream
+        """
+        self.send_command(5)
+
+    def record_stop(self):
+        """
+        Ends current recording session
+        """
+        self.send_command(6)
