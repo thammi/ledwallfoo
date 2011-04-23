@@ -114,12 +114,7 @@ class FadingText:
             time.sleep(snooze)
 
 def parse_color(color_str):
-    color = []
-
-    for i in range(0, 6, 2):
-        color.append(int(color_str[i:i+2],16))
-
-    return color
+    return [int(color_str[i:i+2],16) for i in range(0, 6, 2)]
 
 def main(args):
     from optparse import OptionParser
