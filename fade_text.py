@@ -139,10 +139,10 @@ def main(args):
 
     (options, args) = optp.parse_args()
 
-    if options.color!=None:
+    if options.color != None:
          colors = [parse_color(color_str) for color_str in options.color]
     else:
-         colors = DEF_COLORS
+         colors = None
 
     matrix = LedMatrix()
 
