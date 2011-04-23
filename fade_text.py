@@ -20,7 +20,6 @@
 
 import time
 
-import os
 import Image
 import ImageDraw
 import ImageFont
@@ -64,7 +63,7 @@ class ColorFader:
 
 class FadingText:
 
-    def __init__(self, matrix, text, fade_steps=40,colors=DEF_COLORS, font=DEF_FONT):
+    def __init__(self, matrix, text, fade_steps=40, colors=DEF_COLORS, font=DEF_FONT):
         self.matrix = matrix
         self.text = text
 
@@ -142,7 +141,7 @@ def main(args):
     if options.color != None:
          colors = [parse_color(color_str) for color_str in options.color]
     else:
-         colors = None
+         colors = DEF_COLORS
 
     matrix = LedMatrix()
 
