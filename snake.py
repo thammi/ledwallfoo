@@ -446,7 +446,7 @@ class SnakeGame:
 def main(args):
     from optparse import OptionParser
 
-    optp = OptionParser()
+    optp = OptionParser(usage="%prog [options] [address]")
 
     optp.add_option("-p", "--player",
             help="Set preferred player (0-5)",
