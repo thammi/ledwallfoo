@@ -113,16 +113,13 @@ class FadingText:
             self.step()
             time.sleep(snooze)
 
-def parse_colors(inp):
-    colors = []
-    for j in range(len(inp)):
-       buff = []
-       col = inp[j]
-       for i in range(3):
-          buff.append(int(col[i*2:i*2+2],16))
-       colors.append(tuple(buff))
-    return colors
+def parse_color(color_str):
+    color = []
 
+    for i in range(0, 6, 2):
+        color.append(int(color_str[i:i+2],16))
+
+    return color
 
 def main(args):
     from optparse import OptionParser
@@ -134,27 +131,26 @@ def main(args):
             metavar="FADE_STEPS",
             type="int",
             default=40)
-            
+
     optp.add_option("--priority",
             help="Change priority, default is 2",
             metavar="PRIORITY",
             type="int")
-            
+
     optp.add_option("-c", "--color",
             help="Add a color (in hex, e.g. ff0000) to the color fading",
             action="append",
             metavar="COLOR")
 
     (options, args) = optp.parse_args()
-    
+
     if options.color!=None:
-         colors = parse_colors(options.color)
+         colors = [parse_color(color_str) for color_str in options.color]
          print "Your colors are",colors[:]
     else:
          colors = DEF_COLORS
          print "Your colors are",colors[:]
-         
-    
+
     matrix = LedMatrix()
 
     if options.priority != None:
