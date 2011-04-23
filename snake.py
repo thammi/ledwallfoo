@@ -467,7 +467,7 @@ def main(args):
 
     (options, args) = optp.parse_args()
 
-    matrix = LedMatrix()
+    matrix = LedMatrix(args[0] if args else None)
 
     try:
         matrix.change_priority(options.priority)
