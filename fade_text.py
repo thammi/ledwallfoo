@@ -141,10 +141,8 @@ def main(args):
 
     if options.color!=None:
          colors = [parse_color(color_str) for color_str in options.color]
-         print "Your colors are",colors[:]
     else:
          colors = DEF_COLORS
-         print "Your colors are",colors[:]
 
     matrix = LedMatrix()
 
