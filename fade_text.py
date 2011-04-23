@@ -128,7 +128,7 @@ def main(args):
             default=40)
 
     optp.add_option("--priority",
-            help="Change priority, default is 2",
+            help="Apply the given priority to the connection",
             metavar="PRIORITY",
             type="int")
 
