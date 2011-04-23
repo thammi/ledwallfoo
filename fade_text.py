@@ -138,8 +138,7 @@ def main(args):
     optp.add_option("--priority",
             help="Change priority, default is 2",
             metavar="PRIORITY",
-            type="int",
-            default=2)
+            type="int")
             
     optp.add_option("-c", "--color",
             help="Add a color (in hex, e.g. ff0000) to the color fading",
@@ -157,7 +156,9 @@ def main(args):
          
     
     matrix = LedMatrix()
-    matrix.change_priority(options.priority)
+
+    if options.priority != None:
+        matrix.change_priority(options.priority)
 
     if len(args) < 1:
         text = "<<</>>"
