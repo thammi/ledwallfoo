@@ -130,7 +130,7 @@ def main(args):
     optp = OptionParser()
 
     optp.add_option("-s", "--fade_steps",
-            help="Set preferred number of fade-steps",
+            help="Set color fading speed in steps between colors",
             metavar="FADE_STEPS",
             type="int",
             default=40)
@@ -141,8 +141,8 @@ def main(args):
             type="int",
             default=2)
             
-    optp.add_option("--color",
-            help="Change shown colors; default is R to G to B",
+    optp.add_option("-c", "--color",
+            help="Add a color (in hex, e.g. ff0000) to the color fading",
             action="append",
             metavar="COLOR")
 
