@@ -43,7 +43,7 @@ You should specify the IP address of the pentawall in the environment variable
 `LEDWALL_IP`. If you are at the c3d2 HQ type the following line into your POSIX
 compatible shell:
 
-    export LEDWALL_IP=172.22.99.6
+    export LEDWALL_IP=ledwall
 
 If the environment variable `LEDWALL_PRIORITY` is set the specified priority
 will be set at the initialization of the matrix.
