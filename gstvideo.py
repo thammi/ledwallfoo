@@ -68,7 +68,8 @@ class LedVideoSink(gst.BaseSink):
         self.set_sync(True)
 
         gst.info('setting chain/event functions')
-        self.sinkpad.set_event_function(self.eventfunc)
+        # will break seeking
+        #self.sinkpad.set_event_function(self.eventfunc)
 
     def do_render(self, buffer):
         self.matrix.send_raw_image(buffer)
@@ -85,6 +86,8 @@ class LedPipe:
     # The pipeline
 
     self.visualize = visualize
+    self.seek_to = None
+    self.start_pipeline = False
 
     self.pipeline = gst.Pipeline()
     self.pipeline.auto_clock()
@@ -119,6 +122,14 @@ class LedPipe:
 
     player.set_property("video-sink", self.sink)
     player.connect("about-to-finish", self.on_finish)
+    #player.connect("state-change", self.on_state_change)
+
+    bus = self.pipeline.get_bus()
+    bus.add_signal_watch()
+    bus.enable_sync_message_emission()
+    #bus.connect("message", self.on_message)
+    bus.connect("sync-message::element", self.on_sync_message)
+    bus.connect("message", self.on_message)
 
     # Set 'location' property on filesrc
     player.set_property('uri', gst.uri_is_valid(location) and location or "file://" + location)
@@ -134,6 +145,20 @@ class LedPipe:
 
     # And off we go!
     self.pipeline.set_state(gst.STATE_PLAYING)
+
+  def seek(self, to):
+    #self.player.seek_simple(gst.FORMAT_TIME, gst.SEEK_FLAG_FLUSH, long(to))
+    if not self.player.seek_simple(gst.FORMAT_TIME,
+                                   gst.SEEK_FLAG_FLUSH | gst.SEEK_FLAG_KEY_UNIT,
+                                   max(to, 0)):
+         log("seek failed")
+    self.pipeline.set_state(gst.STATE_PLAYING)
+    self.player.get_state(-1)
+
+
+  def on_state_change(self, bus, msg):
+    #print "state_change", msg, msg.__dict__
+    pass
 
   def quit(self):
     self.pipeline.set_state(gst.STATE_NULL)
@@ -157,6 +182,28 @@ class LedPipe:
     log('on_error: %s' %error[1])
     self.mainloop.quit()
 
+  def on_message(self, bus, message):
+    t = message.type
+    #print "msg",bus,message
+    if t == gst.MESSAGE_STATE_CHANGED:
+      self.on_state_change(bus, message)
+    elif t == gst.MESSAGE_EOS:
+      self.player.set_state(gst.STATE_NULL)
+    elif t == gst.MESSAGE_ERROR:
+      self.player.set_state(gst.STATE_NULL)
+      err, debug = message.parse_error()
+      print "Error: %s" % err, debug
+
+  def on_sync_message(self, bus, message):
+    print (bus, message)
+    if message.structure is None:
+      return
+    #message_name = message.structure.get_name()
+    #if message_name == "prepare-xwindow-id":
+    #  imagesink = message.src
+    #  imagesink.set_property("force-aspect-ratio", True)
+    #  imagesink.set_xwindow_id(self.movie_window.window.xid)
+
 #
 # Code to test the MySink class
 #
@@ -166,6 +213,15 @@ matrix = LedMatrix(server=args.server)
 pipe = LedPipe(args.file[0], matrix, visualize=args.visualize)
 
 import glib, sys, os, fcntl
+
+def GetInHMS(seconds):
+    hours = seconds / 3600
+    seconds -= 3600*hours
+    minutes = seconds / 60
+    seconds -= 60*minutes
+    if hours == 0:
+        return "%02d:%02d" % (minutes, seconds)
+    return "%02d:%02d:%02d" % (hours, minutes, seconds)
 
 
 class ProgressBar:
@@ -230,7 +286,7 @@ class ProgressBar:
             self.bar = self.char * num_hashes + ' ' * (all_full-num_hashes)
  
         percent_str = str(percent_done) + "%"
-        self.bar = '[ ' + self.bar + ' ] ' + percent_str + "  [%s/%s]"  %((self.amount/gst.SECOND),(self.max/gst.SECOND))
+        self.bar = '[ ' + self.bar + ' ] ' + percent_str + "  [%s/%s]"  %(GetInHMS(self.amount),GetInHMS(self.max))
  
  
     def __str__(self):
@@ -241,18 +297,17 @@ prog = ProgressBar(0, 100, 0, mode='fixed')
 def update_scrollbar():
     prog = globals().get("prog", None)
     try:
-       dur = pipe.player.query_duration(gst.FORMAT_TIME)[0]/(1000*1000)
-       cur = pipe.player.query_position(gst.FORMAT_TIME)[0]/(1000*1000)
+       dur = pipe.player.query_duration(gst.FORMAT_TIME)[0]/gst.SECOND
+       cur = pipe.player.query_position(gst.FORMAT_TIME)[0]/gst.SECOND
        if prog and prog.max != dur:
           prog = ProgressBar(0, dur, 77, mode='fixed')
        prog.max = dur
        prog.update_amount(cur)
     except gst.QueryError, e:
-       print e
        prog.max = 100
        prog.update_amount(0)
 
-    print prog, "\r",
+    sys.stdout.write("\r" + str(prog)),
     sys.stdout.flush()
 
     return True
@@ -301,8 +356,8 @@ def usage():
     log("#######################################")
 
 SEEKS = {
-  '\x1b[D': -5,
-  '\x1b[C': 5,
+  '\x1b[D': -15,
+  '\x1b[C': 15,
   # shift key
   '\x1b[1;2C': 30,
   '\x1b[1;2D': -30,
@@ -322,21 +377,17 @@ def key_entered(key):
           return
        try:
           cur = pipe.player.query_position(gst.FORMAT_TIME)[0]
-          print(cur, cur + (SEEKS[k] * gst.SECOND))
-          #pipe.pipeline.set_state(gst.STATE_PAUSED)
-          if not pipe.player.seek_simple(gst.FORMAT_TIME,
-                                  gst.SEEK_FLAG_FLUSH | gst.SEEK_FLAG_KEY_UNIT,
-                                  max(cur + (SEEKS[k] * gst.SECOND), 0)):
-             log("seek failed")
-          pipe.pipeline.set_state(gst.STATE_PLAYING)
-          pipe.player.get_state(-1)
-          #pipe.pipeline.set_state(gst.STATE_PLAYING)
+          to = max(cur + (SEEKS[k] * gst.SECOND), 0)
+          print(cur, to)
+          pipe.seek(to)
        except gst.QueryError, e:
           log(e)
        update_scrollbar()
     elif k == "R":
+       log("!!!! START RECORDING !!!!")
        matrix.record_start()
     elif k == "S":
+       log("!!!! RECORDING STOPPED !!!!")
        matrix.record_stop() 
     elif k == "v":
        #FIXME
