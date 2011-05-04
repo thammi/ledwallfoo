@@ -63,7 +63,7 @@ class ColorFader:
 
 class FadingText:
 
-    def __init__(self, matrix, text, font=DEF_FONT, colors=DEF_COLORS):
+    def __init__(self, matrix, text, fade_steps=40, colors=DEF_COLORS, font=DEF_FONT):
         self.matrix = matrix
         self.text = text
 
@@ -82,7 +82,7 @@ class FadingText:
 
         self.width = text_width + image_width
 
-        self.fader = ColorFader(colors)
+        self.fader = ColorFader(colors, fade_steps)
 
     def step(self):
         matrix = self.matrix
@@ -112,8 +112,41 @@ class FadingText:
             self.step()
             time.sleep(snooze)
 
+def parse_color(color_str):
+    return [int(color_str[i:i+2],16) for i in range(0, 6, 2)]
+
 def main(args):
+    from optparse import OptionParser
+
+    optp = OptionParser()
+
+    optp.add_option("-s", "--fade_steps",
+            help="Set color fading speed in steps between colors",
+            metavar="FADE_STEPS",
+            type="int",
+            default=40)
+
+    optp.add_option("--priority",
+            help="Apply the given priority to the connection",
+            metavar="PRIORITY",
+            type="int")
+
+    optp.add_option("-c", "--color",
+            help="Add a color (in hex, e.g. ff0000) to the color fading",
+            action="append",
+            metavar="COLOR")
+
+    (options, args) = optp.parse_args()
+
+    if options.color != None:
+         colors = [parse_color(color_str) for color_str in options.color]
+    else:
+         colors = DEF_COLORS
+
     matrix = LedMatrix()
+
+    if options.priority != None:
+        matrix.change_priority(options.priority)
 
     if len(args) < 1:
         text = "<<</>>"
@@ -121,7 +154,7 @@ def main(args):
         text = u' '.join(arg.decode("utf-8") for arg in args)
 
     try:
-        FadingText(matrix, text).endless()
+        FadingText(matrix, text, options.fade_steps, colors).endless()
     finally:
         matrix.close()
 
