@@ -56,7 +56,7 @@ class LedVideoSink(gst.BaseSink):
           gst.PadTemplate ("sink",
                             gst.PAD_SINK,
                             gst.PAD_ALWAYS,
-                            gst.caps_from_string("video/x-raw-rgb,width=16,height=15,bpp=24,framerate=23/1")
+                            gst.caps_from_string("video/x-raw-rgb,width=16,height=15,bpp=24,framerate=40/1")
                           ),
      )
 
@@ -152,8 +152,21 @@ class LedPipe:
                                    gst.SEEK_FLAG_FLUSH | gst.SEEK_FLAG_KEY_UNIT,
                                    max(to, 0)):
          log("seek failed")
-    self.pipeline.set_state(gst.STATE_PLAYING)
+    #self.pipeline.set_state(gst.STATE_PLAYING)
     self.player.get_state(-1)
+
+  def play(self):
+    self.pipeline.set_state(gst.STATE_PLAYING)
+
+  def pause(self):
+    self.pipeline.set_state(gst.STATE_PAUSED)
+
+  @property
+  def paused(self):
+    state = self.pipeline.get_state(-1)
+    if not state:
+       return False
+    return state[1] != gst.STATE_PLAYING
 
 
   def on_state_change(self, bus, msg):
@@ -368,6 +381,13 @@ SEEKS = {
 
 
 def key_entered(key):
+    if key == " ":
+       if pipe.paused:
+          log("playing")
+          pipe.play()
+       else:
+          log("pause")
+          pipe.pause()
     k = key.strip()
     if k == "q":
        pipe.mainloop.quit()
@@ -378,7 +398,7 @@ def key_entered(key):
        try:
           cur = pipe.player.query_position(gst.FORMAT_TIME)[0]
           to = max(cur + (SEEKS[k] * gst.SECOND), 0)
-          print(cur, to)
+          #print(cur, to)
           pipe.seek(to)
        except gst.QueryError, e:
           log(e)
