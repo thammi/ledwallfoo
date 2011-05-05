@@ -48,6 +48,30 @@ gobject.threads_init ()
 def log(*args):
     print "\n".join(args)
 
+def terminal_size():
+    def ioctl_GWINSZ(fd):
+        try:
+            import fcntl, termios, struct, os
+            cr = struct.unpack('hh', fcntl.ioctl(fd, termios.TIOCGWINSZ,
+        '1234'))
+        except:
+            return None
+        return cr
+    cr = ioctl_GWINSZ(0) or ioctl_GWINSZ(1) or ioctl_GWINSZ(2)
+    if not cr:
+        try:
+            fd = os.open(os.ctermid(), os.O_RDONLY)
+            cr = ioctl_GWINSZ(fd)
+            os.close(fd)
+        except:
+            pass
+    if not cr:
+        try:
+            cr = (os.environment['LINES'], os.environment['COLUMNS'])
+        except:
+            cr = (25, 80)
+    return int(cr[1]), int(cr[0])
+
 
 
 class LedVideoSink(gst.BaseSink):
@@ -285,8 +309,9 @@ class ProgressBar:
         diff = float(self.amount - self.min)
         percent_done = int(round((diff / float(self.span)) * 100.0))
  
-        # figure the proper number of 'character' make up the bar 
-        all_full = self.width - 2
+        # figure the proper number of 'character' make up the bar
+        suff = "  [%s/%s]"  %(GetInHMS(self.amount),GetInHMS(self.max))
+        all_full = self.width - len(suff) - 9
         num_hashes = int(round((percent_done * all_full) / 100))
  
         if self.mode == 'dynamic':
@@ -299,13 +324,13 @@ class ProgressBar:
             self.bar = self.char * num_hashes + ' ' * (all_full-num_hashes)
  
         percent_str = str(percent_done) + "%"
-        self.bar = '[ ' + self.bar + ' ] ' + percent_str + "  [%s/%s]"  %(GetInHMS(self.amount),GetInHMS(self.max))
+        self.bar = '[ ' + self.bar + ' ] ' + percent_str + suff
  
  
     def __str__(self):
         return str(self.bar)
 
-prog = ProgressBar(0, 100, 0, mode='fixed')
+prog = ProgressBar(0, 100, mode='fixed', width=terminal_size()[0])
 
 def update_scrollbar():
     prog = globals().get("prog", None)
@@ -313,7 +338,7 @@ def update_scrollbar():
        dur = pipe.player.query_duration(gst.FORMAT_TIME)[0]/gst.SECOND
        cur = pipe.player.query_position(gst.FORMAT_TIME)[0]/gst.SECOND
        if prog and prog.max != dur:
-          prog = ProgressBar(0, dur, 77, mode='fixed')
+          prog = ProgressBar(0, dur, mode='fixed', width=terminal_size()[0])
        prog.max = dur
        prog.update_amount(cur)
     except gst.QueryError, e:
@@ -348,7 +373,7 @@ class IODriver(object):
 
     def io_callback(self, fd, condition):
         chunk = fd.read()
-        log( "got %s" %repr(chunk))
+        #log( "got %s" %repr(chunk))
         if self.key_callback:
             self.key_callback(chunk)
         for char in chunk:
