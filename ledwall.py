@@ -80,7 +80,7 @@ class LedMatrix:
             if 'LEDWALL_IP' in os.environ:
                 server = os.environ['LEDWALL_IP']
             else:
-                server = "localhost"
+                server = "ledwall"
 
         self.lazy_resp = lazy_resp
         self.hang_resp = 0
