@@ -27,6 +27,7 @@ import ImageFont
 from ledwall import LedMatrix, const_loop
 
 DEF_COLORS = [(0xff, 0x00, 0x00), (0x00, 0xff, 0x00), (0x00, 0x00, 0xff)]
+DEF_BACK = (0x00, 0x00, 0x00)
 DEF_FONT = "DejaVuSans.ttf"
 
 class ColorFader:
@@ -63,7 +64,7 @@ class ColorFader:
 
 class FadingText:
 
-    def __init__(self, matrix, text, fade_steps=40, colors=DEF_COLORS, font=DEF_FONT):
+    def __init__(self, matrix, text, fade_steps=40, colors=DEF_COLORS, font=DEF_FONT, background=DEF_BACK):
         self.matrix = matrix
         self.text = text
 
@@ -84,6 +85,8 @@ class FadingText:
 
         self.fader = ColorFader(colors, fade_steps)
 
+        self.background = background
+
     def step(self):
         matrix = self.matrix
         text = self.text
@@ -91,9 +94,10 @@ class FadingText:
         fader = self.fader
         im = self.im
 
-        image_width = matrix.size[0]
+        image_width, image_height = matrix.size
 
         # draw and send
+        self.draw.rectangle((0, 0, image_width, image_height), fill=self.background)
         self.draw.text((image_width - progress, 0), text, fill=fader.color())
         matrix.send_image(im)
 
@@ -113,7 +117,7 @@ class FadingText:
             time.sleep(snooze)
 
 def parse_color(color_str):
-    return [int(color_str[i:i+2],16) for i in range(0, 6, 2)]
+    return tuple(int(color_str[i:i+2],16) for i in range(0, 6, 2))
 
 def main(args):
     from optparse import OptionParser
@@ -136,12 +140,21 @@ def main(args):
             action="append",
             metavar="COLOR")
 
+    optp.add_option("-b", "--background",
+            help="Set background color",
+            metavar="COLOR")
+
     (options, args) = optp.parse_args()
 
     if options.color != None:
          colors = [parse_color(color_str) for color_str in options.color]
     else:
          colors = DEF_COLORS
+
+    if options.background != None:
+        background = parse_color(options.background)
+    else:
+        background = DEF_BACK
 
     matrix = LedMatrix()
 
@@ -154,7 +167,7 @@ def main(args):
         text = u' '.join(arg.decode("utf-8") for arg in args)
 
     try:
-        FadingText(matrix, text, options.fade_steps, colors).endless()
+        FadingText(matrix, text, options.fade_steps, colors, background=background).endless()
     finally:
         matrix.close()
 
