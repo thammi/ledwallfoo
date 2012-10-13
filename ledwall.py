@@ -100,7 +100,7 @@ class LedMatrix:
         self.sock.close()
 
     def receive_options(self, command, data=""):
-        """Sends the command to the led matrix."""
+        """Receive options from the led matrix."""
         sock = self.sock
         lazy_resp = self.lazy_resp
 
