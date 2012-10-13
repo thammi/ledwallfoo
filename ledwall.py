@@ -78,7 +78,12 @@ class LedMatrix:
         """
         if server == None:
             if 'LEDWALL_IP' in os.environ:
-                server = os.environ['LEDWALL_IP']
+                parts = os.environ['LEDWALL_IP'].split(':')
+
+                server = parts[0]
+
+                if len(parts) > 1:
+                    port = int(parts[1])
             else:
                 server = "ledwall"
 
