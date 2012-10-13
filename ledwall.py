@@ -91,9 +91,45 @@ class LedMatrix:
         if 'LEDWALL_PRIORITY' in os.environ:
             self.change_priority(int(os.environ['LEDWALL_PRIORITY']))
 
+        opts = self.receive_options(1)
+        print(opts)
+        self.size = (opts['width'], opts['height'])
+
     def close(self):
         """Closes the connection to the led matrix"""
         self.sock.close()
+
+    def receive_options(self, command, data=""):
+        """Sends the command to the led matrix."""
+        sock = self.sock
+        lazy_resp = self.lazy_resp
+
+        sock.send("%02x" % command + data + "\r\n")
+
+        self.hang_resp += 1
+
+        buf = ""
+        opts = {}
+
+        while True:
+            buf += sock.recv(256)
+
+            while len(buf):
+                split = buf.find('\r\n')
+
+                if split == -1:
+                    break
+
+                line = buf[:split]
+                buf = buf[split+2:]
+
+                if self.hang_resp:
+                    self.hang_resp -= 1
+                elif len(line):
+                    key, value = line.split('=')
+                    opts[key] = value
+                else:
+                    return opts
 
     def send_command(self, command, data=""):
         """Sends the command to the led matrix."""
