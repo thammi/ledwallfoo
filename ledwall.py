@@ -88,7 +88,7 @@ class LedMatrix:
                 server = "ledwall"
 
         self.lazy_resp = lazy_resp
-        self.hang_resp = 0
+        self.hang_resp = 1
 
         self.sock = sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((server, port))
@@ -97,8 +97,7 @@ class LedMatrix:
             self.change_priority(int(os.environ['LEDWALL_PRIORITY']))
 
         opts = self.receive_options(1)
-        print(opts)
-        self.size = (opts['width'], opts['height'])
+        self.size = (int(opts['width']), int(opts['height']))
 
     def close(self):
         """Closes the connection to the led matrix"""
@@ -110,8 +109,6 @@ class LedMatrix:
         lazy_resp = self.lazy_resp
 
         sock.send("%02x" % command + data + "\r\n")
-
-        self.hang_resp += 1
 
         buf = ""
         opts = {}
