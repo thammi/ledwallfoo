@@ -158,7 +158,7 @@ class LedMatrix:
         width, height = self.size
         msg_format = "%02x" * (2 + 3)
 
-        self.send_command(2, msg_format % (x+1, y+1, r, g, b))
+        self.send_command(2, msg_format % (x, y, r, g, b))
 
     def send_image(self, image):
         """Writes a Python Imaging Library on the led matrix."""
